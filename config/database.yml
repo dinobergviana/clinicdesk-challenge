@@ -1,8 +1,21 @@
-development:
+default: &default
   adapter: postgresql
   encoding: unicode
-  database: task_manager_api_development
+  pool: 5
   username: postgres
   password: postgres
-  host: 127.0.0.1
-  port: 5432
+  host: localhost
+
+development:
+  <<: *default
+  database: task_manager_api_development
+
+test:
+  <<: *default
+  database: task_manager_api_test
+
+production:
+  <<: *default
+  database: task_manager_api_production
+  username: postgres
+  password: postgres
