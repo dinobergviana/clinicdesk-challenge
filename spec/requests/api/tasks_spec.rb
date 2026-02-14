@@ -167,6 +167,69 @@ RSpec.describe "Api::Tasks", type: :request do
         expect(json["errors"]).not_to be_empty
       end
     end
+
+    context "with title shorter than 3 characters" do
+      it "returns validation error for title length" do
+        post "/api/tasks", params: {
+          task: {
+            title: "ab",
+            status: "pending"
+          }
+        }
+
+        json = JSON.parse(response.body)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(json["errors"]).to include(match(/title.*minimum is 3 characters/i))
+      end
+    end
+
+    context "with invalid status value" do
+      it "returns validation error for invalid status" do
+        post "/api/tasks", params: {
+          task: {
+            title: "Valid task",
+            status: "invalid_status"
+          }
+        }
+
+        json = JSON.parse(response.body)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(json["errors"]).to include(match(/Status is not included in the list/i))
+      end
+    end
+
+    context "with missing title" do
+      it "returns validation error when title is blank" do
+        post "/api/tasks", params: {
+          task: {
+            title: "",
+            status: "pending"
+          }
+        }
+
+        json = JSON.parse(response.body)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(json["errors"]).to include(match(/title.*can't be blank/i))
+      end
+    end
+
+    context "with missing status" do
+      it "creates task with default pending status" do
+        post "/api/tasks", params: {
+          task: {
+            title: "Valid task"
+          }
+        }
+
+        json = JSON.parse(response.body)
+
+        expect(response).to have_http_status(:created)
+        expect(json["data"]["status"]).to eq("pending")
+      end
+    end
   end
 
   # =========================
